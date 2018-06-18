@@ -1,0 +1,201 @@
+﻿
+@{
+    ViewBag.Title = "SchedulerQuestion";
+}
+
+<body>
+    <div class="Wrapper" ng-app="myApp">
+        <div class="Sidebar" ng-class="boolie ? 'is-collapsed' : ''">
+            <header class="Sidebar-header">
+                <div class="Sidebar-logo"></div>
+            </header>
+            <nav role="navigation">
+                <ul>
+                    <li class="Sidebar-navItem">
+                        <i class="Sidebar-menuIcon fa fa-bar-chart"></i>
+                        <a href="statistiques.php">Statistiques</a>
+                    </li>
+                    <li class="Sidebar-navItem">
+                        <i class="Sidebar-menuIcon fa fa-shopping-cart"></i>
+                        <a href="#">Activités</a>
+                    </li>
+                    <li class="Sidebar-navItem">
+                        <i class="Sidebar-menuIcon fa fa-cog"></i>
+                        <a href="questions.php">Questions</a>
+                    </li>
+                    <!--    <li class="Sidebar-navItem">
+                            <i class="Sidebar-menuIcon fa fa-question-circle"></i>
+                            <a href="#">Help & Support</a>
+                        </li>           -->
+                    <li class="Sidebar-navItem">
+                        <i class="Sidebar-menuIcon fa fa-sign-out"></i>
+                        <a href="#">Se déconnecter</a>
+                    </li>
+                </ul>
+            </nav>
+            <footer class="Sidebar-footer" ng-click="boolie = !boolie">
+                <i class="Sidebar-toggleArrow Sidebar-menuIcon fa fa-arrow-left" ng-class="boolie ? 'rotate' : ''"></i>
+                <span class="Sidebar-toggleText">Minimize menu</span>
+            </footer>
+        </div>
+        <div class="Main">
+
+
+
+            <div id="wrapper">
+                <header>
+                    <div id="page-banner">
+                        <h1 class="title">Questions</h1>
+                        <!-- <p>Books for you</p>
+                         <form id="search-books">
+                             <input type="text" placeholder="Rechercher question..." />
+                         </form> -->
+                    </div>
+                </header>
+                <form id="add-book">
+                    <!--    <input type="checkbox" id="hide" />
+                    <label for="hide">Hide all books</label> -->
+                    <input type="text" placeholder="Ajouter une question..." />
+                    <!--  <input type="text" placeholder="Réponse gauche" />
+                      <input type="text" placeholder="Réponse droite" /> -->
+                    <button>Add</button>
+                </form>
+
+                <div id="book-list">
+                    <h2 class="title">Planning</h2>
+                    @foreach (InterfaceCli.APIGreen.SPI_QuestionAnswer_Result question in ViewData["Questions"] as IList<InterfaceCli.APIGreen.SPI_QuestionAnswer_Result>)
+                    {
+                        <ul>
+                            <li>
+                                <span class="name">@question.label @question.response_left @question.response_right</span>
+                                <span class="name">@question.date_start.Value.Hour @question.date_end.Value.Hour</span>
+                                <span class="delete">delete</span>
+                            </li>
+                        </ul>
+                    }
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+        var app = angular.module('myApp', []);
+    </script>
+
+    <script>
+        const list = document.querySelector("#book-list ul");
+        const addBook = document.forms["add-book"];
+        const hideBookList = document.querySelector('#hide');
+        const searchBar = document.forms['search-books'].querySelector('input');
+        const tabs = document.querySelector('.tabs');
+        const panels = document.querySelectorAll('.panel');
+
+        //add events
+        list.addEventListener('click', deleteElement);
+        addBook.addEventListener('submit', addElement);
+        hideBookList.addEventListener('change', hideList);
+        searchBar.addEventListener('keyup', searchElement);
+        tabs.addEventListener('click', tabbedContent);
+
+        //delete element from list
+        function deleteElement(e) {
+            if (e.target.className === 'delete') {
+                const li = e.target.parentElement;
+                list.removeChild(li)
+            }
+        }
+
+        //add elements (book)
+        function addElement(e) {
+            e.preventDefault();
+            let input = addBook.querySelector('input[type="text"]');
+            const value = input.value;
+            const listOfBooks = list.getElementsByTagName('li');
+
+            if (value === "") {
+                alert('You can not add empty book')
+            } else if (value.length > 20) {
+                alert('Your book title is so long')
+            } else {
+                [].forEach.call(listOfBooks, function (el) {
+                    if (value === el.firstElementChild.textContent) {
+                        throw new Error('This book is already in the list ');
+                    }
+                });
+                //creates elements for book list
+                const li = document.createElement("li");
+                const bookName = document.createElement("span");
+                const deleteButton = document.createElement("span");
+
+                //add text into elements
+                bookName.textContent = value;
+                deleteButton.textContent = "delete";
+
+                //add classes
+                bookName.classList.add('name');
+                deleteButton.classList.add('delete');
+
+                //append elements to the DOM
+                li.appendChild(bookName);
+                li.appendChild(deleteButton);
+                list.appendChild(li);
+
+                //clear input
+                input.value = "";
+            }
+        }
+        //hide list of books
+        function hideList() {
+            if (hideBookList.checked) {
+                list.style.display = 'none';
+            } else {
+                list.style.display = 'block';
+            }
+        }
+
+        function searchElement(e) {
+            const term = e.target.value.toLowerCase();
+            const books = list.getElementsByTagName('li');
+            for (let i = 0; i < books.length; i++) {
+                let title = books[i].firstElementChild.textContent;
+                if (title.toLowerCase().indexOf(term) !== -1) {
+                    books[i].style.display = 'block';
+                } else {
+                    books[i].style.display = 'none';
+                }
+            }
+        }
+
+        //tabbed content
+        function tabbedContent(e) {
+            if (e.target.tagName === 'LI') {
+                const targetPanel = document.querySelector(e.target.dataset.target);
+                panels.forEach(function (panel) {
+                    if (panel === targetPanel) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                })
+            }
+        }
+    </script>
+</body>
